@@ -1,12 +1,14 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 
+const userRoutes = require('./routes/userRoutes');
+
 const app = express();
 var db;
 
-function createTables(newdb) {
-    newdb.exec(`
-    create table use (
+function createTables(db) {
+    db.exec(`
+    create table user (
         id int primary key not null,
         last_name text not null,
         first_name text not null,
@@ -19,13 +21,11 @@ function createTables(newdb) {
         //
         const arrUsers = require('./data/mock.json')
         for (let user of arrUsers) {
-
             runQueries(`
                 insert into user (first_name, last_name, city)
                 values ('${user['first_name']}', '${user['last_name']}', '${user['city']}');
                `)
         }
-
     });
 }
 
@@ -53,6 +53,8 @@ new sqlite3.Database('./iwanttoworkatdarwinx.db', sqlite3.OPEN_READWRITE, (err) 
 app.get('/', function (req, res) {
     res.send('DarwinX - Job Tech Test');
 })
+
+app.use('/users', userRoutes)
 
 const server = app.listen(8081, function () {
 
