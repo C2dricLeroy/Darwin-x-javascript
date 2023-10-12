@@ -1,11 +1,10 @@
 class UserService {
-    constructor(db) {
-        this.db = db;
+    constructor() {
     }
 
-    async createUser(body) {
+    async createUser(body, db) {
         try {
-            return this.db.run('INSERT INTO user')
+            return db.run('INSERT INTO user')
         } catch (err) {
             throw err;
         }

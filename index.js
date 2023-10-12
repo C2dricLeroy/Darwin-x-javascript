@@ -4,17 +4,7 @@ const sqlite3 = require('sqlite3');
 const userRoutes = require('./routes/userRoutes');
 
 const app = express();
-var db;
-
-function createDatabase() {
-    db = new sqlite3.Database('iwanttoworkatdarwinx.db', (err) => {
-        if (err) {
-            console.log("Getting error " + err);
-            process.exit(1);
-        }
-        createTables(db);
-    });
-}
+let db;
 
 function createTables(db) {
     db.exec(`
@@ -26,10 +16,8 @@ function createTables(db) {
         city TEXT NOT NULL
     );
         `, ()  => {
-        runQueries(db);
+        const arrUsers = require('./data/mock.json');
 
-        //
-        const arrUsers = require('./data/mock.json')
         for (let user of arrUsers) {
             db.run(`
                 INSERT INTO user (first_name, last_name, city)
@@ -38,10 +26,20 @@ function createTables(db) {
         }
     });
 }
+
+function createDatabase() {
+    const localDb = new sqlite3.Database('iwanttoworkatdarwinx.db', (err) => {
+        if (err) {
+            console.log("Getting error " + err);
+            process.exit(1);
+        }
+        createTables(localDb);
+    });
+}
+
 new sqlite3.Database('./iwanttoworkatdarwinx.db', sqlite3.OPEN_READWRITE, (err) => {
     if (err && err.code === "SQLITE_CANTOPEN") {
         createDatabase();
-        return;
     } else if (err) {
         console.log("Getting error " + err);
         process.exit(1);
@@ -56,6 +54,10 @@ app.get('/', function (req, res) {
     res.send('DarwinX - Job Tech Test');
 });
 
+app.use((req, res, next) => {
+    req.db = db;
+    next();
+});
 app.use('/users', userRoutes);
 
 const server = app.listen(8081, function () {
